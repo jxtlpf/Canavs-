@@ -118,19 +118,13 @@
         //    设置canvas 大小
         document.getElementsByClassName("canvas-container")[0].style.width = bgPicWidth + "vw";
         document.getElementsByClassName("canvas-container")[0].style.height = bgPicHeight + "vw";
-//        document.getElementsByClassName("canvas-container")[0].width = (bgPicWidth/100)*clientWidth;
-//        document.getElementsByClassName("canvas-container")[0].height = (bgPicHeight/100)*clientWidth;
-//        document.getElementsByClassName("canvas-container")[0].style.marginLeft = (bgWidth - bgPicWidth) / 100 * clientWidth / 2 + "px"
-//        document.getElementsByClassName("canvas-container")[0].style.marginTop = (bgHeight - bgPicHeight) / 100 * clientWidth / 2 + "px"
+
         document.getElementsByTagName("canvas")[0].style.width = bgPicWidth + "vw";
         document.getElementsByTagName("canvas")[0].style.height = bgPicHeight + "vw";
 
-//        document.getElementsByTagName("canvas")[0].width =  (bgPicWidth/100)*clientWidth;
-//        document.getElementsByTagName("canvas")[0].height = (bgPicHeight/100)*clientWidth;
         document.getElementsByTagName("canvas")[1].style.width = bgPicWidth + "vw";
         document.getElementsByTagName("canvas")[1].style.height = bgPicHeight + "vw";
-//        document.getElementsByTagName("canvas")[1].width = (bgPicWidth/100)*clientWidth;
-//        document.getElementsByTagName("canvas")[1].height =(bgPicHeight/100)*clientWidth;
+
         sword.src = "./pics/sword.png";
         sword.onload = function () {
             r1 = sword.height / sword.width;
@@ -156,8 +150,7 @@
                 cornerColor: 'black',
                 hasControls: true,
             });
-//            canvasF.item(0).set('selectable', true);
-//            canvasF.setActiveObject(canvasF.item(0));
+
         }
     }
 
@@ -188,8 +181,7 @@
         ctx.drawImage(canvasSwordPic, 0, 0, clientWidth * (bgPicWidth / 100), clientWidth * (bgPicHeight / 100));
         document.getElementById("bg").appendChild(newCanvas);
         document.getElementsByTagName("canvas")[0].style.width = bgPicWidth + "vw";
-//        document.getElementsByTagName("canvas")[0].style.marginLeft = (bgWidth - bgPicWidth) / 100 * clientWidth / 2 + "px"
-//        document.getElementsByTagName("canvas")[0].style.marginTop = (bgHeight - bgPicHeight) / 100 * clientWidth / 2 + "px"
+
 
         var canvas = document.getElementById("newCanvas");
         var ctx = canvas.getContext("2d");
@@ -297,8 +289,7 @@
         var img = document.createElement("img");
         img.src = canvasImg.src;
         bg.appendChild(img);
-//        img.style.marginTop = (bgHeight - bgPicHeight) / 100 * clientWidth / 2 + "px";
-//        img.style.marginLeft = (bgWidth - bgPicWidth) / 100 * clientWidth / 2 + "px";
+
         img.style.width = bgPicWidth + "vw";
         img.style.height = bgPicHeight + "vw";
 
@@ -329,9 +320,7 @@
                         ctx.drawImage(bgPic, -canvass.height / 2, -canvass.width / 2, canvass.height, canvass.width);//把图片绘制在旋转的中心点，
                         ctx.restore();//恢复状态
                         bgPic = convertCanvasToImage(canvass);
-//                        ww=convertCanvasToImage(canvass);
-//                        console.log(ww.height)
-//                        Canvas2Image.saveAsPNG(canvass,false,canvass.height,canvass.width)
+
                         bgPic.height = canvass.width;
                         bgPic.width = canvass.height;
                         var r = bgPic.height / bgPic.width;
@@ -359,9 +348,7 @@
                         bg.style.height = bgPicHeight + "vw";
                         bg.style.marginLeft = (bgWidth - bgPicWidth) / 2 + "vw";
                         bg.style.marginTop = (bgHeight - bgPicHeight) / 2 + "vw";
-//                    bg.style.position = "absolute";
-//                    bg.style.top = bgTop + "vw";
-//                    bg.style.marginRight = (100 - bgWidth) / 2 + "vw";
+
                         bg.style.backgroundImage = "url(" + bgPic.src + ")";
 //                    bg.style.backgroundAttachment = "fixed";
                         bg.style.backgroundRepeat = 'no-repeat';
@@ -401,9 +388,6 @@
                         bg.style.height = bgPicHeight + "vw";
                         bg.style.marginLeft = (bgWidth - bgPicWidth) / 2 + "vw";
                         bg.style.marginTop = (bgHeight - bgPicHeight) / 2 + "vw";
-//                    bg.style.position = "absolute";
-//                    bg.style.top = bgTop + "vw";
-//                    bg.style.marginRight = (100 - bgWidth) / 2 + "vw";
                         bg.style.backgroundImage = "url(" + bgPic.src + ")";
 //                    bg.style.backgroundAttachment = "fixed";
                         bg.style.backgroundRepeat = 'no-repeat';
