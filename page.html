@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en" style="width: 100%">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>化身鬼怪寻找那个帮你拔剑的人</title>
+
+    <style>
+        body {
+            margin: 0px;
+
+        }
+
+        #nextStep {
+            width: 51.8vw;
+            height: 18.2vw;
+            margin: 0 24.29vw;
+            position: absolute;
+            top: 125vw;
+        }
+
+        #createPic {
+            width: 51.8vw;
+            height: 18.2vw;
+            margin: 0 24.29vw;
+            position: absolute;
+            top: 125vw;
+        }
+
+        #reDraw {
+            display: block;
+            position: absolute;
+            top: 115vw;
+            margin: 0vw 41vw;
+        }
+
+        #bigBg {
+            background-color: black;
+            width: 85.6vw;
+            height: 85.6vw;
+            position: absolute;
+            top: 10.2vw;
+            left: 7.2vw;
+        }
+    </style>
+    <script src="js/fabric.js"></script>
+    <script src="js/funcs.js"></script>
+    <script src="js/base64.js"></script>
+    <script src="js/canvas2image.js"></script>
+    <script src="js/exif.js"></script>
+</head>
+<body style="background-color: gold">
+<div id="indexPic">
+    <img src="./pics/pic1.jpeg" style="width: 100vw;height: 100vh" onclick="clickUpload()" id="bgPic">
+</div>
+<div id="bigBg" style="display: none">
+    <div id="bg" style="display: none;background-color: black">
+        <canvas id="c"></canvas>
+        <canvas id="c2" style="display: none"></canvas>
+    </div>
+</div>
+
+<div id="tools" style="display: none">
+    <input type="file" accept="image/*" id="fileUpload" style="display: none"
+           onchange="uploadFile()" capture="camera"/>
+    <img src="./pics/next.png" onclick="goNextStep(this)" id="nextStep">
+    <img src="./pics/createPic.png" onclick="letCreatePic()" id="createPic" style="display: none">
+
+    <a onclick="goNextStep(this)" style="display: none;" href="javascript:void(0);" id="reDraw">重新擦</a>
+    <img src="" id="sword" style="display: none">
+
+</div>
+
+</body>
+
+<script>
+    //    创建画布
+    var canvasF = new fabric.Canvas('c', {});
+    //    加入剑的image
+    var sword = new Image();
+    //    选择背景图，也就是要上传的图片的image
+    var bgPic = new Image();
+    //    保存调好位置的剑
+    var r1 = 0;
+    var radius = 5;      //画圆的半径
+    var canvasSwordPic = null;
+    //    判断当前是第几页
+    var pageNum = 1;
+    //    画布的高度和宽度
+    var bgWidth = 85.6;
+    var bgHeight = 85.6;
+    var bgTop = 10.2;
+    //    存储此背景图的高度和宽度 单位为vw
+    var bgPicWidth = 0;
+    var bgPicHeight = 0;
+    //二维码
+    var can = document.getElementById("c");
+    can.style.width = bgWidth + "vw";
+    can.style.height = bgHeight + "vw";
+    //            //获取视图可见宽度
+    var clientWidth = document.body.clientWidth;
+    var code = new Image();
+    code.src = './pics/code.png';
+    //    像素比
+    var pr = window.devicePixelRatio;
+
+    //获取照片的元信息（拍摄方向）
+    function getPhotoOrientation(img) {
+        var orient = null;
+        EXIF.getData(img, function () {
+            orient = EXIF.getTag(this, 'Orientation');
+        });
+        return orient;
+    }
+
+    function addSword() {
+        //    设置canvas 大小
+        document.getElementsByClassName("canvas-container")[0].style.width = bgPicWidth + "vw";
+        document.getElementsByClassName("canvas-container")[0].style.height = bgPicHeight + "vw";
+//        document.getElementsByClassName("canvas-container")[0].width = (bgPicWidth/100)*clientWidth;
+//        document.getElementsByClassName("canvas-container")[0].height = (bgPicHeight/100)*clientWidth;
+//        document.getElementsByClassName("canvas-container")[0].style.marginLeft = (bgWidth - bgPicWidth) / 100 * clientWidth / 2 + "px"
+//        document.getElementsByClassName("canvas-container")[0].style.marginTop = (bgHeight - bgPicHeight) / 100 * clientWidth / 2 + "px"
+        document.getElementsByTagName("canvas")[0].style.width = bgPicWidth + "vw";
+        document.getElementsByTagName("canvas")[0].style.height = bgPicHeight + "vw";
+
+//        document.getElementsByTagName("canvas")[0].width =  (bgPicWidth/100)*clientWidth;
+//        document.getElementsByTagName("canvas")[0].height = (bgPicHeight/100)*clientWidth;
+        document.getElementsByTagName("canvas")[1].style.width = bgPicWidth + "vw";
+        document.getElementsByTagName("canvas")[1].style.height = bgPicHeight + "vw";
+//        document.getElementsByTagName("canvas")[1].width = (bgPicWidth/100)*clientWidth;
+//        document.getElementsByTagName("canvas")[1].height =(bgPicHeight/100)*clientWidth;
+        sword.src = "./pics/sword.png";
+        sword.onload = function () {
+            r1 = sword.height / sword.width;
+
+            var swordElement = document.getElementById('sword');
+            swordElement.src = sword.src;
+
+            swordElement.width = (clientWidth / 7) * 6;
+            swordElement.height = swordElement.width * r1;
+            var imgInstance = new fabric.Image(swordElement, {
+                left: clientWidth/30,
+                top: (bgTop + bgPicHeight) / 100 * clientWidth - 100 * r1 - 80,
+                angle: -30,
+                scale: 0.3,
+                opacity: pr * 2,
+                width: clientWidth/5*3,
+                height:  clientWidth/5*3* r1,
+            });
+            canvasF.add(imgInstance);
+            //    设置剑可以多动旋转等
+            canvasF.item(0).set({
+                borderColor: 'gray',
+                cornerColor: 'black',
+                hasControls: true,
+            });
+//            canvasF.item(0).set('selectable', true);
+//            canvasF.setActiveObject(canvasF.item(0));
+        }
+    }
+
+
+    function saveCanvas(pCanvas, strType) {
+        var bRes = false;
+        if (strType == "PNG")
+            bRes = Canvas2Image.saveAsPNG(pCanvas);
+        if (strType == "BMP")
+            bRes = Canvas2Image.saveAsBMP(pCanvas);
+        if (strType == "JPEG")
+            bRes = Canvas2Image.saveAsJPEG(pCanvas);
+
+        if (!bRes) {
+            alert("Sorry, this browser is not capable of saving " + strType + " files!");
+            return false;
+        }
+    }
+    //    将摆好位置的剑重新放入canvas 并插入bg 元素中
+    function addNewCanvas() {
+
+        document.getElementById("bg").innerHTML = "";
+        var newCanvas = document.createElement('canvas');
+        var ctx = newCanvas.getContext("2d");
+        newCanvas.width = clientWidth * (bgPicWidth / 100);
+        newCanvas.height = clientWidth * (bgPicHeight / 100);
+        newCanvas.id = "newCanvas";
+        ctx.drawImage(canvasSwordPic, 0, 0, clientWidth * (bgPicWidth / 100), clientWidth * (bgPicHeight / 100));
+        document.getElementById("bg").appendChild(newCanvas);
+        document.getElementsByTagName("canvas")[0].style.width = bgPicWidth + "vw";
+//        document.getElementsByTagName("canvas")[0].style.marginLeft = (bgWidth - bgPicWidth) / 100 * clientWidth / 2 + "px"
+//        document.getElementsByTagName("canvas")[0].style.marginTop = (bgHeight - bgPicHeight) / 100 * clientWidth / 2 + "px"
+
+        var canvas = document.getElementById("newCanvas");
+        var ctx = canvas.getContext("2d");
+        var drawing = false;
+
+
+        canvas.ontouchstart = function (e) {
+            e.preventDefault();
+            var touch = e.touches[0];
+            var first = getBoundingClientRect(touch.pageX, touch.pageY, canvas);
+            drawCanvas(first.x, first.y, ctx, canvas)
+            drawing = true;
+        }
+
+        canvas.ontouchmove = function (e) {
+            e.preventDefault();
+            var touch = e.touches[0];
+            console.log(e)
+            if (drawing) {
+                var move = getBoundingClientRect(touch.pageX, touch.pageY, canvas);
+                drawCanvas(move.x, move.y, ctx, canvas)
+            }
+        }
+
+        canvas.ontouchend = function (e) {
+            e.preventDefault();
+            drawing = false;
+        }
+    }
+
+
+    //点击下一步触发的函数
+    function goNextStep(e) {
+        canvasF.item(0).set('selectable', false);
+        document.getElementById("nextStep").style.display = "none";
+        document.getElementById("reDraw").style.display = "block";
+        document.getElementById("createPic").style.display = "block";
+
+//        保存图片
+//        saveCanvas(canvasF,"PNG");
+        if (document.getElementById("c")) {
+            document.getElementById("c").style.display = "none";
+        }
+        canvasSwordPic = Canvas2Image.saveAsPNG(canvasF, true);
+
+        canvasSwordPic.width = clientWidth * (bgPicWidth / 100);
+        canvasSwordPic.height = clientWidth * (bgPicHeight / 100);
+        console.log(e.id);
+
+        if (e.id != "reDraw") {
+            showToolsAndBgHideIndexPic();
+        }
+        setTimeout(addNewCanvas, 800);
+//        addNewCanvas();
+
+
+    }
+    function getBoundingClientRect(x, y, canvas) {
+        var box = canvas.getBoundingClientRect();    //获取canvas的距离浏览器视窗的上下左右距离
+        return {
+            x: x - box.left,
+            y: y - box.top
+        }
+    }
+
+    function drawCanvas(x, y, ctx, canvas) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2, false)
+        ctx.clip();
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.restore()
+    }
+    //点击生成照片按钮触发的事件，将背景图转换为canvas 并且将当前的canvas转换为图片再转换成canvas，将背景图和此修理的好 剑一起放入同一个canvas，并加入二维码
+    function letCreatePic() {
+        var newCanvas = document.createElement('canvas');
+        var ctx = newCanvas.getContext("2d");
+        newCanvas.width = clientWidth * (bgPicWidth / 100) * pr;
+        newCanvas.height = clientWidth * (bgPicHeight / 100) * pr;
+        newCanvas.style.width = clientWidth * (bgPicWidth / 100);
+        newCanvas.style.height = clientWidth * (bgPicHeight / 100);
+        newCanvas.id = "newCanvas";
+
+        ctx.drawImage(bgPic, 0, 0, bgPicWidth / 100 * clientWidth * pr, bgPicHeight / 100 * clientWidth * pr);
+
+
+        //        将擦除好的剑存入图片
+        var newCanvasSword = document.getElementById("newCanvas");
+        canvasSwordPic = Canvas2Image.saveAsPNG(newCanvasSword, true);
+        canvasSwordPic.width = clientWidth * (bgPicWidth / 100) * pr;
+        canvasSwordPic.height = clientWidth * (bgPicHeight / 100) * pr;
+        ctx.drawImage(newCanvasSword, 0, 0, clientWidth * (bgPicWidth / 100) * pr, clientWidth * (bgPicHeight / 100) * pr);
+
+        //放入二维码
+
+        r1 = 1;
+        code.width = clientWidth / 12;
+        code.height = clientWidth / 12;
+        ctx.drawImage(code, ( bgPicWidth / 100 * clientWidth - code.width) * pr, (bgPicHeight / 100 * clientWidth - code.height) * pr, code.width * pr, code.height * pr);
+//        清空bg 并重新插入canvas
+        var bg = document.getElementById("bg");
+        bg.innerHTML = "";
+        showToolsAndBgHideIndexPic();
+        var canvasImg = convertCanvasToImage(newCanvas);
+        var img = document.createElement("img");
+        img.src = canvasImg.src;
+        bg.appendChild(img);
+//        img.style.marginTop = (bgHeight - bgPicHeight) / 100 * clientWidth / 2 + "px";
+//        img.style.marginLeft = (bgWidth - bgPicWidth) / 100 * clientWidth / 2 + "px";
+        img.style.width = bgPicWidth + "vw";
+        img.style.height = bgPicHeight + "vw";
+
+    }
+    //    点击上传图片触发事件
+    function uploadFile() {
+        var imgFile = document.getElementById("fileUpload");
+
+        var file = imgFile.files[0];
+        if (imgFile.files && imgFile.files[0]) {
+
+            var reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (e) {
+                bgPic.src = e.target.result;
+                bgPic.onload = function () {
+                    //  检查 原始图片是否被旋转了，如果被旋转了则再旋转90 度旋转过来
+                    var ori = getPhotoOrientation(bgPic);
+                    if (ori == 6) {
+                        var canvass = document.getElementById("c2");
+                        var ctx = canvass.getContext("2d");
+                        canvass.width = bgPic.width;
+                        canvass.height = bgPic.height;
+
+                        ctx.save();//保存状态
+                        ctx.translate(canvass.width / 2, canvass.height / 2);//设置画布上的(0,0)位置，也就是旋转的中心点
+                        ctx.rotate(90 * Math.PI / 180);
+                        ctx.drawImage(bgPic, -canvass.height / 2, -canvass.width / 2, canvass.height, canvass.width);//把图片绘制在旋转的中心点，
+                        ctx.restore();//恢复状态
+                        bgPic = convertCanvasToImage(canvass);
+//                        ww=convertCanvasToImage(canvass);
+//                        console.log(ww.height)
+//                        Canvas2Image.saveAsPNG(canvass,false,canvass.height,canvass.width)
+                        bgPic.height = canvass.width;
+                        bgPic.width = canvass.height;
+                        var r = bgPic.height / bgPic.width;
+//                     背景图防止变形
+                        if (r < bgHeight / bgWidth) {
+                            bgPicWidth = bgWidth;
+                            bgPic.style.width = bgWidth + "vw";
+                            bgPic.width = bgPicWidth / 100 * clientWidth;
+                            bgPicHeight = r * bgWidth;
+                            bgPic.style.height = r * bgWidth + "vw";
+                            bgPic.height = r * bgWidth / 100 * clientWidth;
+                        } else {
+                            bgPicWidth = (bgHeight / r);
+                            bgPicHeight = bgHeight;
+                            bgPic.height = bgHeight / 100 * clientWidth;
+                            bgPic.width = bgPicWidth / 100 * clientWidth;
+                            bgPic.style.height = bgHeight + "vw";
+                            bgPic.style.width = bgPicWidth + "vw";
+                        }
+
+
+                        var bg = document.getElementById("bg");
+                        document.getElementById("bigBg").style.display = "block";
+                        bg.style.width = bgPicWidth + "vw";
+                        bg.style.height = bgPicHeight + "vw";
+                        bg.style.marginLeft = (bgWidth - bgPicWidth) / 2 + "vw";
+                        bg.style.marginTop = (bgHeight - bgPicHeight) / 2 + "vw";
+//                    bg.style.position = "absolute";
+//                    bg.style.top = bgTop + "vw";
+//                    bg.style.marginRight = (100 - bgWidth) / 2 + "vw";
+                        bg.style.backgroundImage = "url(" + bgPic.src + ")";
+//                    bg.style.backgroundAttachment = "fixed";
+                        bg.style.backgroundRepeat = 'no-repeat';
+                        bg.style.backgroundSize = "100% 100%";
+
+//                    防止剑旋转变形  设置canvas 宽 高和上传图像的一致
+                        canvasF.setDimensions({
+                            width: bgPicWidth / 100 * clientWidth,
+                            height: bgPicHeight / 100 * clientWidth
+                        });
+                        showToolsAndBgHideIndexPic();
+                        addSword();
+
+                    } else {
+                        var r = bgPic.height / bgPic.width;
+//                     背景图防止变形
+                        if (r < bgHeight / bgWidth) {
+                            bgPicWidth = bgWidth;
+                            bgPic.style.width = bgWidth + "vw";
+                            bgPic.width = bgPicWidth / 100 * clientWidth;
+                            bgPicHeight = r * bgWidth;
+                            bgPic.style.height = r * bgWidth + "vw";
+                            bgPic.height = r * bgWidth / 100 * clientWidth;
+                        } else {
+                            bgPicWidth = (bgHeight / r);
+                            bgPicHeight = bgHeight;
+                            bgPic.height = bgHeight / 100 * clientWidth;
+                            bgPic.width = bgPicWidth / 100 * clientWidth;
+                            bgPic.style.height = bgHeight + "vw";
+                            bgPic.style.width = bgPicWidth + "vw";
+                        }
+
+
+                        var bg = document.getElementById("bg");
+                        document.getElementById("bigBg").style.display = "block";
+                        bg.style.width = bgPicWidth + "vw";
+                        bg.style.height = bgPicHeight + "vw";
+                        bg.style.marginLeft = (bgWidth - bgPicWidth) / 2 + "vw";
+                        bg.style.marginTop = (bgHeight - bgPicHeight) / 2 + "vw";
+//                    bg.style.position = "absolute";
+//                    bg.style.top = bgTop + "vw";
+//                    bg.style.marginRight = (100 - bgWidth) / 2 + "vw";
+                        bg.style.backgroundImage = "url(" + bgPic.src + ")";
+//                    bg.style.backgroundAttachment = "fixed";
+                        bg.style.backgroundRepeat = 'no-repeat';
+                        bg.style.backgroundSize = "100% 100%";
+
+//                    防止剑旋转变形  设置canvas 宽 高和上传图像的一致
+                        canvasF.setDimensions({
+                            width: bgPicWidth / 100 * clientWidth,
+                            height: bgPicHeight / 100 * clientWidth
+                        });
+                        showToolsAndBgHideIndexPic();
+                        addSword();
+                    }
+
+
+                }
+
+            }
+
+        }
+    }
+    function clickUpload(evt) {
+        evt = evt || window.event;
+        var x = 0, y = 0;
+
+        //如果事件对象有pageX属性,对应firefox,opera,chrome,safari浏览器
+        if (evt.pageX) {
+            x = evt.pageX;
+            y = evt.pageY;
+        }
+        //如果对象有clientX属性,对应IE浏览器
+        else if (evt.clientX) {
+            var offsetX = 0, offsetY = 0;
+            //IE6及其以上版本
+            if (document.documentElement.scrollLeft) {
+                offsetX = document.documentElement.scrollLeft;
+                offsetY = document.documentElement.scrollTop;
+            }
+            //IE较旧的版本
+            else if (document.body) {
+                offsetX = document.body.scrollLeft;
+                offsetY = document.body.scrollTop;
+            }
+            x = evt.clientX + offsetX;
+            y = evt.clientY + offsetY;
+        }
+        console.log(x)
+        console.log(y)
+
+        if (36 < x && x < 346 && 152 < y && y < 502) {
+            var imgFile = document.getElementById("fileUpload");
+            imgFile.click();
+        }
+
+    }
+    function showToolsAndBgHideIndexPic() {
+        pageNum++;
+        console.log(pageNum);
+
+        var bgPic = document.getElementById("bgPic");
+        var nextStep = document.getElementById("nextStep");
+
+        if (pageNum == 2) {
+            var p2div = document.createElement("div");
+            p2div.innerHTML = "旋转、缩放到合适位置";
+            p2div.id = "p2div";
+            p2div.style.position = "absolute";
+            p2div.style.top = "105vw";
+            p2div.style.textAlign = "center";
+            p2div.style.width = "100vw";
+            p2div.style.fontSize = "5.622vw";
+            p2div.style.fontWeight = "bolder";
+            document.body.appendChild(p2div);
+
+            document.getElementById("indexPic").innerHTML = "";
+        } else if (pageNum == 3) {
+            document.getElementById("p2div").innerHTML = "用手擦掉被挡住的部分";
+            nextStep.style.display = "none";
+            document.getElementById("createPic").style.display = "block";
+        } else if (pageNum == 4) {
+            var ad = document.createElement("img");
+            ad.src = "./pics/ad.jpeg";
+
+            ad.style.width = "100vw";
+            ad.style.height = "32w";
+            ad.style.position = "absolute";
+            ad.style.bottom = 0;
+            document.body.appendChild(ad);
+            document.getElementById("p2div").style.display = "block";
+            document.getElementById("p2div").innerHTML = "制作成功!长按图片保存吧";
+            document.getElementById("tools").style.display = "none";
+        }
+        if (pageNum != 4) {
+            document.getElementById("bg").style.display = "block";
+            document.getElementById("tools").style.display = "block";
+        }
+
+
+    }
+    // Converts canvas to an image
+    function convertCanvasToImage(canvas) {
+        var image = new Image();
+        image.src = canvas.toDataURL("image/png");
+        return image;
+    }
+    //    alert(window.devicePixelRatio)
+
+</script>
+
+</html>
